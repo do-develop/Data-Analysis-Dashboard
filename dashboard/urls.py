@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     path('countries/', views.country_list, name='country_list'),
-    path('', views.dashboard_with_pivot, name='dashboard_with_pivot'),
-    path('data', views.pivot_data, name='pivot_data'),
+    path('details/<str:country_code>/', views.country_detail, name='country_detail'),
+    path('', views.international_debt_statistics_data, name='dataset'),
 ]

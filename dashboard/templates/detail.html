@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Country Detail</title>
+</head>
+<body>
+    <h1>Details for {{ country_name }} ({{ country_code }})</h1>
+
+    {% for year, data in grouped_data.items %}
+        <h2>Year: {{ year }}</h2>
+        <canvas id="chart-{{ year }}" width="400" height="200"></canvas>
+        <script>
+            var ctx = document.getElementById('chart-{{ year }}').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'bar', // or 'line', 'pie', etc.
+                data: {
+                    labels: {{ data.labels|safe }},
+                    datasets: [{
+                        label: 'Amount',
+                        data: {{ data.amounts|safe }},
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    {% endfor %}
+
+
+</body>
+</html>

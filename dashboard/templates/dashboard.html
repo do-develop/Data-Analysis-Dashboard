@@ -1,7 +1,122 @@
 <head>
     <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static '../static/css/styles.css' %}">
 </head>
 <body>
-    <h1>Dashboard!</h1>
-    <div id="pivot-chart-container"></div>
+    <h1>International Debt Statistics</h1>
+    <div>
+        <h2>Total Number of Countries</h2>
+        <p>{{ total_countries }}</p>
+    </div>
+
+    <div>
+        <h2>Income Group Distribution by Region</h2>
+        <div id="distributionChartContainer"></div>
+        
+    </div>
+
+    <div>
+        <h2>Total Amount for Each Country in {{ data_year }}</h2>
+        <canvas id="debtChart"></canvas>
+    </div>
+
+    <script>
+    const ctx = document.getElementById('debtChart').getContext('2d');
+    const country_array =  {{ countries|safe }};
+    const chart = new Chart(ctx, {
+        type: 'bar', 
+        data: {
+            labels: {{ countries|safe }},
+            datasets: [{
+                label: `Total Amount for ${{ current_year }}`,
+                data: {{ amounts|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                const index = elements[0].index;
+                const countryCode = country_array[index];
+                window.location.href = `/dashboard/details/${countryCode}/`;
+                }
+            }
+        }
+    });
+
+
+
+
+    const regionsData = {{ regions_data|safe }};
+    console.log(document.getElementById('distributionChartContainer').innerHTML);
+
+    function generateColors(count) {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            const r = Math.floor(Math.random() * 250);
+            const g = Math.floor(Math.random() * 250);
+            const b = Math.floor(Math.random() * 250);
+            colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`);
+        }
+        return colors;
+    }
+
+    function createPieChart(ctx, labels, data, title) {
+        const colors = generateColors(labels.length);
+        console.log("colors: ", colors);
+
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: title,
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors.map(color => color.replace('0.2', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const distribution_container = document.getElementById('distributionChartContainer');
+
+    regionsData.forEach((regionData, index) => {
+        const canvas = document.createElement('canvas');
+        canvas.id = `distributionChart-${index}`;
+        canvas.classList.add("region-pie");
+        distribution_container.appendChild(canvas);
+        let ctx = canvas.getContext('2d');
+        createPieChart(ctx, regionData.labels, regionData.data, `Distribution in ${regionData.region}`);
+    });
+
+  </script>
+
 </body>

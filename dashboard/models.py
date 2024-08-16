@@ -34,15 +34,15 @@ class Country(models.Model):
 
 
 class Data(models.Model):
-    country_code = models.ForeignKey(Country, models.DO_NOTHING, db_column='country_code', blank=True, null=True)
-    series_code = models.ForeignKey('Series', models.DO_NOTHING, db_column='series_code', blank=True, null=True)
-    year = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    country_code = models.ForeignKey('Country', models.DO_NOTHING, db_column='country_code', primary_key=True)
+    series_code = models.ForeignKey('Series', models.DO_NOTHING, db_column='series_code')
+    year = models.DecimalField(max_digits=65535, decimal_places=65535)
     amount = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 
     class Meta:
-        managed = False
+        # managed = False
         db_table = 'data'
-
+        unique_together = (('country_code', 'series_code', 'year'),)
 
 class Series(models.Model):
     code = models.CharField(primary_key=True, max_length=32)
