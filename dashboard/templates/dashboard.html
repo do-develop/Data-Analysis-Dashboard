@@ -2,10 +2,15 @@
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static '../static/css/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <title>IDS</title>
 </head>
 <body>
-    <h1>International Debt Statistics</h1>
+    <h1 class="title">International Debt Statistics</h1>
     <div>
         <h2>Total Number of Countries</h2>
         <p>{{ total_countries }}</p>
@@ -50,29 +55,31 @@
                 window.location.href = `/dashboard/details/${countryCode}/`;
                 }
             }
+            
         }
     });
 
 
-
-
+    //==================================================================================
+    // Income group distribution by Region
+    //==================================================================================
+    const distribution_container = document.getElementById('distributionChartContainer');
     const regionsData = {{ regions_data|safe }};
-    console.log(document.getElementById('distributionChartContainer').innerHTML);
+    const incomeLevelColors = {
+        'Low income': 'rgba(255, 200, 86, 0.7)', 
+        'Lower middle income': 'rgba(240, 210, 112, 0.9)',
+        'Upper middle income': 'rgba(75, 192, 152, 0.7)',
+        'High income': 'rgba(75, 150, 100, 0.8)'
+    };
 
-    function generateColors(count) {
-        const colors = [];
-        for (let i = 0; i < count; i++) {
-            const r = Math.floor(Math.random() * 250);
-            const g = Math.floor(Math.random() * 250);
-            const b = Math.floor(Math.random() * 250);
-            colors.push(`rgba(${r}, ${g}, ${b}, 0.2)`);
-        }
-        return colors;
+    function generateColors(labels) {
+        return labels.map((label) => {
+            return incomeLevelColors[label] || 'rgba(201, 203, 207, 0.2)';  // Default to a gray color if not found
+        });
     }
 
     function createPieChart(ctx, labels, data, title) {
-        const colors = generateColors(labels.length);
-        console.log("colors: ", colors);
+        const colors = generateColors(labels);
 
         return new Chart(ctx, {
             type: 'doughnut',
@@ -91,6 +98,12 @@
                 plugins: {
                     legend: {
                         position: 'top',
+                        align: 'start',
+                        labels: {
+                            font: {
+                                size: 16
+                            }
+                        }
                     },
                     tooltip: {
                         callbacks: {
@@ -106,15 +119,21 @@
         });
     }
 
-    const distribution_container = document.getElementById('distributionChartContainer');
-
     regionsData.forEach((regionData, index) => {
+        const region_div = document.createElement('div');
         const canvas = document.createElement('canvas');
+        const caption = document.createElement('p');
+        region_div.style.textAlign = "center";
         canvas.id = `distributionChart-${index}`;
         canvas.classList.add("region-pie");
-        distribution_container.appendChild(canvas);
+        caption.innerHTML = `Distribution in ${regionData.region}`;
+        region_div.appendChild(canvas);
+        region_div.appendChild(caption);
+        distribution_container.appendChild(region_div);
+
         let ctx = canvas.getContext('2d');
         createPieChart(ctx, regionData.labels, regionData.data, `Distribution in ${regionData.region}`);
+        document.querySelector('.region-pie').removeAttribute('style');
     });
 
   </script>
