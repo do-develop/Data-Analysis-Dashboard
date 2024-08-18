@@ -2,6 +2,7 @@
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% load static %}
+    <link rel="shortcut icon" type="image/svg" href="{% static 'images/favicon.svg' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +24,7 @@
     </div>
 
     <div>
-        <h2>Total Amount for Each Country in {{ data_year }}</h2>
+        <h2>Total Debt (US$) for Each Country in {{ data_year }}</h2>
         <canvas id="debtChart"></canvas>
     </div>
 
@@ -44,6 +45,12 @@
         },
         options: {
             scales: {
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 90,
+                    }
+                },
                 y: {
                     beginAtZero: true
                 }

@@ -8,7 +8,7 @@
 </head>
 <body>
     <h1>Details for {{ country_name }} ({{ country_code }})</h1>
-    {% #TODO: Logarithmic scaling %}
+    <!-- #TODO: Logarithmic scaling -->
     {% for year, data in grouped_data.items %}
         <h2>Year: {{ year }}</h2>
         <canvas id="chart-{{ year }}" width="400" height="200"></canvas>

@@ -19,12 +19,18 @@ def country_list(request):
 
 def international_debt_statistics_data(request):
     dataset = Data.objects.all()
-    data_year = 2018
-    total_countries = dataset.values('country_code').distinct().count()
-    year_data = dataset.filter(year=data_year).values('country_code').annotate(total_amount=Sum('amount'))
-    # print(f"Current Year Data: {year_data}")
-    countries = [entry['country_code'] for entry in year_data]
-    amounts = [float(entry['total_amount']) for entry in year_data] 
+    data_year = 2018    
+    debt_series_code = 'DT.DOD.DECT.CD' # External Debt (Total, current US$)
+    year_data = dataset.filter(year=data_year, series_code=debt_series_code)
+    
+    valid_countries = Country.objects.exclude(region=None).values_list('code', flat='True')
+    year_data = year_data.filter(country_code__in=valid_countries)
+    total_countries = year_data.values('country_code').distinct().count()
+    country_debt_data = year_data.values('country_code').annotate(total_amount=Sum('amount')).order_by('country_code')
+
+    countries = [entry['country_code'] for entry in country_debt_data]
+    print("countries data: ", countries)
+    amounts = [float(entry['total_amount']) for entry in country_debt_data]
     
 
     distribution_data = Country.objects.values('region', 'income_group').annotate(count=Count('code')).order_by('region')
@@ -66,9 +72,6 @@ def international_debt_statistics_data(request):
     return render(request, 'dashboard.html', context)
 
 
-def income_group_distribution_by_region(request):
-    
-    return render(request, 'dashboard.html', context)
 
 # def pivot_data(request):
 #     # dataset = Data.objects.all()
@@ -103,3 +106,21 @@ def country_detail(request, country_code):
 
     return render(request, 'detail.html', context)
 
+
+
+# https://www.kaggle.com/code/salmaneunus/international-debt-statistics-analysis/notebook
+# Which country owns the maximum amount of debt and what does that amount look like?
+
+
+# What is the average amount of debt owed by countries across different debt indicators?
+
+'''
+# IDEA 1 - Show how the distribution of countries across different income groups has changed over the years.
+# In stacked area chart, group countries by income_group and year, then count the number of countries in each income group for each year.
+
+# IDEA 2 - Analyze the trend of various economic indicators over time for a specific country or region.
+# Line Chart with Multiple Series (Filter the Data model by country_code and series_code, and plot the amount over the year. You can allow users to select different series codes to visualize trends of different indicators.)
+
+# IDEA 3 - Compare specific economic indicators (like GDP per capita, external debt, etc.) across different regions.
+# Bar Chart with Grouped Data - For a selected year, group data by region and series_code, then plot the amount for each region.
+'''
