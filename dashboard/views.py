@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.core import serializers
-from django.db.models import Max, Sum, Count
+from django.db.models import Max, Sum, Count, Avg
 from .models import Country, Series, Data
 from datetime import datetime
 import logging
@@ -19,6 +19,7 @@ def country_list(request):
 
 def international_debt_statistics_data(request):
     dataset = Data.objects.all()
+    # PART 1 - Total Debt by Countries
     data_year = 2018    
     debt_series_code = 'DT.DOD.DECT.CD' # External Debt (Total, current US$)
     year_data = dataset.filter(year=data_year, series_code=debt_series_code)
@@ -29,10 +30,10 @@ def international_debt_statistics_data(request):
     country_debt_data = year_data.values('country_code').annotate(total_amount=Sum('amount')).order_by('country_code')
 
     countries = [entry['country_code'] for entry in country_debt_data]
-    print("countries data: ", countries)
     amounts = [float(entry['total_amount']) for entry in country_debt_data]
     
 
+    # PART 2 - Income Distribution by Region
     distribution_data = Country.objects.values('region', 'income_group').annotate(count=Count('code')).order_by('region')
 
     # region, income_group, count
@@ -73,46 +74,53 @@ def international_debt_statistics_data(request):
 
 
 
-# def pivot_data(request):
-#     # dataset = Data.objects.all()
-#     # data = serializers.serialize('json', dataset)
-#     return JsonResponse(data, safe=False)
-
 def country_detail(request, country_code):
-    detailed_data = Data.objects.filter(country_code=country_code, year__range=(2018,2020))
     country_data = Country.objects.filter(code=country_code)
+    detailed_data = Data.objects.filter(
+        country_code=country_code, year__range=(2018,2020)
+        ).select_related('series_code')
+    # Top 5 average amount of debt for each series code
+    average_debt = detailed_data.values('series_code').annotate(
+        average_amount=Avg('amount')
+    ).order_by('-average_amount')[:5]
 
-    # Initialize a dictionary to hold data grouped by year
-    grouped_data = {}
+    series_codes = [item['series_code'] for item in average_debt]
+    series_details = Series.objects.filter(code__in=series_codes).values('code', 'indicator_name', 'long_definition')
+    series_map = {item['code']: {
+            'indicator_name': item['indicator_name'],
+            'long_definition': item['long_definition']
+        } for item in series_details}
 
-    for detail in detailed_data:
-        year = detail.year
-        series_code = detail.series_code.code
-        amount = float(detail.amount)
-        
-        # Ensure the year key exists in the grouped_data dictionary
-        if year not in grouped_data:
-            grouped_data[year] = {'labels': [], 'amounts': []}
-        
-        # Add the series_code and amount to the corresponding year
-        grouped_data[year]['labels'].append(series_code)
-        grouped_data[year]['amounts'].append(amount)
+    # Prepare data for Chart.js
+    chart_data = {
+        'labels': [],
+        'data': [],
+        'series_details': []
+    }
 
+    for item in average_debt:
+        series_code = item['series_code']
+        average_amt = float(item['average_amount'])
+        details = series_map.get(series_code, {})
+
+        chart_data['labels'].append(details.get('indicator_name', 'Unknown'))
+        chart_data['data'].append(average_amt)
+        chart_data['series_details'].append({
+            'code': series_code,
+            'indicator_name': details.get('indicator_name', 'Unknown'),
+            'long_definition': details.get('long_definition', 'N/A')
+        })
+    
     context = {
         'country_code': country_code,
         'country_name': country_data[0].long_name,
-        'grouped_data': grouped_data,
+        'chart_data': chart_data
     }
 
+    print('context: ', context)
     return render(request, 'detail.html', context)
 
 
-
-# https://www.kaggle.com/code/salmaneunus/international-debt-statistics-analysis/notebook
-# Which country owns the maximum amount of debt and what does that amount look like?
-
-
-# What is the average amount of debt owed by countries across different debt indicators?
 
 '''
 # IDEA 1 - Show how the distribution of countries across different income groups has changed over the years.

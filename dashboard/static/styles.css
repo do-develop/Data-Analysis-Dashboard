@@ -16,6 +16,23 @@ body {
     height: auto !important;
 }
 
+.series-detail-table {
+    margin: 1em;
+}
+
+.series-detail-table, th, td {
+    border: 1px solid gray;
+    border-collapse: collapse;
+    padding: 3px;
+    text-align: justify;
+}
+
 .title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.title h1 {
     color:rgba(75, 150, 100, 1);
 }

@@ -3,39 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="shortcut icon" type="image/svg" href="{% static 'images/favicon.svg' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Country Detail</title>
 </head>
 <body>
-    <h1>Details for {{ country_name }} ({{ country_code }})</h1>
+    <h1>Top 5 Debt Indicators for Country: {{ country_name }} ({{ country_code }}) for 2018 ~ 2020</h1>
     <!-- #TODO: Logarithmic scaling -->
-    {% for year, data in grouped_data.items %}
-        <h2>Year: {{ year }}</h2>
-        <canvas id="chart-{{ year }}" width="400" height="200"></canvas>
-        <script>
-            var ctx = document.getElementById('chart-{{ year }}').getContext('2d');
-            var chart = new Chart(ctx, {
-                type: 'bar', // or 'line', 'pie', etc.
-                data: {
-                    labels: {{ data.labels|safe }},
-                    datasets: [{
-                        label: 'Amount',
-                        data: {{ data.amounts|safe }},
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+    <canvas id="top5chart"></canvas>
+    <!-- Table with Series Details -->
+    <h2>Series Details</h2>
+    <table class="series-detail-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Indicator Name</th>
+                <th>Definition</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for series in chart_data.series_details %}
+                <tr>
+                    <td>{{ series.code }}</td>
+                    <td>{{ series.indicator_name }}</td>
+                    <td>{{ series.long_definition }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>    
+    </table>
+
+
+    <script>
+        var ctx = document.getElementById('top5chart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'bar', // or 'line', 'pie', etc.
+            data: {
+                labels: {{ chart_data.labels|safe }},
+                datasets: [{
+                    label: 'Amount',
+                    data: {{ chart_data.data|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',  // For horizontal bar chart
+                scales: {
+                    x: {
+                        beginAtZero: true
                     }
                 }
-            });
-        </script>
-    {% endfor %}
+            }
+        });
+    </script>
+   
 
 
 </body>
