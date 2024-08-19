@@ -76,10 +76,12 @@ def international_debt_statistics_data(request):
 
 def country_detail(request, country_code):
     country_data = Country.objects.filter(code=country_code)
+    
+    # PART 1 - Top 5 Average Amount of Debt for Each Series Code
     detailed_data = Data.objects.filter(
         country_code=country_code, year__range=(2018,2020)
-        ).select_related('series_code')
-    # Top 5 average amount of debt for each series code
+    ).select_related('series_code')
+
     average_debt = detailed_data.values('series_code').annotate(
         average_amount=Avg('amount')
     ).order_by('-average_amount')[:5]
@@ -91,7 +93,7 @@ def country_detail(request, country_code):
             'long_definition': item['long_definition']
         } for item in series_details}
 
-    # Prepare data for Chart.js
+    # prepare data for Chart.js
     chart_data = {
         'labels': [],
         'data': [],
@@ -110,14 +112,29 @@ def country_detail(request, country_code):
             'indicator_name': details.get('indicator_name', 'Unknown'),
             'long_definition': details.get('long_definition', 'N/A')
         })
+
+    # PART 2 - Trend View
+    total_debt_series = 'DT.DOD.DECT.CD'
+    trends = Data.objects.filter(country_code=country_code, series_code=total_debt_series).order_by('year')
+    years = []
+    amounts = []
+    for trend in trends:
+        years.append(int(trend.year))
+        amounts.append(float(trend.amount))
+
+    trend_data = {
+        'series': total_debt_series,
+        'labels': years,
+        'data': amounts,
+    }
     
     context = {
         'country_code': country_code,
         'country_name': country_data[0].long_name,
-        'chart_data': chart_data
+        'chart_data': chart_data,
+        'trend_data': trend_data,
     }
 
-    print('context: ', context)
     return render(request, 'detail.html', context)
 
 
@@ -125,9 +142,6 @@ def country_detail(request, country_code):
 '''
 # IDEA 1 - Show how the distribution of countries across different income groups has changed over the years.
 # In stacked area chart, group countries by income_group and year, then count the number of countries in each income group for each year.
-
-# IDEA 2 - Analyze the trend of various economic indicators over time for a specific country or region.
-# Line Chart with Multiple Series (Filter the Data model by country_code and series_code, and plot the amount over the year. You can allow users to select different series codes to visualize trends of different indicators.)
 
 # IDEA 3 - Compare specific economic indicators (like GDP per capita, external debt, etc.) across different regions.
 # Bar Chart with Grouped Data - For a selected year, group data by region and series_code, then plot the amount for each region.

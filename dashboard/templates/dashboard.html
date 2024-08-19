@@ -4,10 +4,7 @@
     {% load static %}
     <link rel="shortcut icon" type="image/svg" href="{% static 'images/favicon.svg' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="{% static 'fonts/comfortaa.css' %}">
     <title>IDS</title>
 </head>
 <body>
@@ -42,8 +39,8 @@
             datasets: [{
                 label: `Total Amount for ${{ current_year }}`,
                 data: {{ amounts|safe }},
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 152, 0.5)',
+                borderColor: 'rgba(75, 192, 152, 1)',
                 borderWidth: 1
             }]
         },
@@ -56,7 +53,8 @@
                     }
                 },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    type: 'logarithmic',
                 }
             },
             onClick: (event, elements) => {

@@ -1,5 +1,5 @@
 body {
-    font-family: "Montserrat", sans-serif;
+    font-family: "Comfortaa", sans-serif;
     margin: 0;
     padding: 0;
     text-align: center;
@@ -20,8 +20,12 @@ body {
     margin: 1em;
 }
 
+.series-detail-table th {
+    color: gray;
+}
+
 .series-detail-table, th, td {
-    border: 1px solid gray;
+    border: 1px solid lightgray;
     border-collapse: collapse;
     padding: 3px;
     text-align: justify;

@@ -6,6 +6,7 @@
     {% load static %}
     <link rel="shortcut icon" type="image/svg" href="{% static 'images/favicon.svg' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'fonts/comfortaa.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Country Detail</title>
 </head>
@@ -34,11 +35,13 @@
         </tbody>    
     </table>
 
+    <h2>Yearly trend for total debt ({{ trend_data.series }})</h2>
+    <canvas id="trendChart"></canvas>
 
     <script>
-        var ctx = document.getElementById('top5chart').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'bar', // or 'line', 'pie', etc.
+        var ranking_ctx = document.getElementById('top5chart').getContext('2d');
+        var chart = new Chart(ranking_ctx, {
+            type: 'bar',
             data: {
                 labels: {{ chart_data.labels|safe }},
                 datasets: [{
@@ -57,6 +60,29 @@
                     }
                 }
             }
+        });
+
+
+
+        const trend_ctx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trend_ctx, {
+            type: 'line',
+            data: {
+                labels: {{ trend_data.labels|safe }},
+                datasets: [{
+                    label: 'Amount in USD',
+                    data: {{ trend_data.data|safe }}
+
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+
         });
     </script>
    
