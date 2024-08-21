@@ -59,9 +59,9 @@
             },
             onClick: (event, elements) => {
                 if (elements.length > 0) {
-                const index = elements[0].index;
-                const countryCode = country_array[index];
-                window.location.href = `/dashboard/details/${countryCode}/`;
+                    const index = elements[0].index;
+                    const countryCode = country_array[index];
+                    window.location.href = `./details/${countryCode}/`;
                 }
             }
             
