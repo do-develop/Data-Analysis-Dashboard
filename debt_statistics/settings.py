@@ -154,4 +154,7 @@ LOGGING = {
     },
 }
 
-from .settings_local import *
+try:
+    from .settings_local import *
+except:
+    pass
