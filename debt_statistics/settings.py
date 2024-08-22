@@ -147,7 +147,7 @@ LOGGING = {
         'level': 'WARNING',
     },
     'loggers': {
-        'mylogeer': {
+        'mylogger': {
             'handlers': ['console'],
             'level': 'INFO'
         },
